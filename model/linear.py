@@ -1,5 +1,9 @@
+import sys
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+
 import faiss
-from data import xb, xq, d
+from data.data import xb, xq, d
 import time
 
 class FlatL2():
@@ -27,16 +31,17 @@ class FlatL2():
     D, I = self.index.search(xq, self.k)
     time_search = time.time() - start
     return D, I, time_search
-  
-obj = FlatL2(k = 4)
-time_train = obj.train(xb, d)
-D, I, _ = obj.search(xb[:5])
-print(D)
-print(I)
-_, I, time_search = obj.search(xq)
-print(I[:5])
-print(I[-5:])
-print(f"time_train : {time_train}, time_search : {time_search}")
+
+if __name__=="__main__":
+  obj = FlatL2(k = 4)
+  time_train = obj.train(xb, d)
+  D, I, _ = obj.search(xb[:5])
+  print(D)
+  print(I)
+  _, I, time_search = obj.search(xq)
+  print(I[:5])
+  print(I[-5:])
+  print(f"time_train : {time_train}, time_search : {time_search}")
 
 
     
