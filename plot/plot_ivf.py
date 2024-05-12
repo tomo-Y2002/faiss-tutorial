@@ -6,9 +6,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from model.ivf import IVF
-from data.data import xb, xq, d
+from data.data import make_data
 
 def main():
+  xb, xq, d = make_data()
   nlists = np.logspace(1, 3, 10).astype("int")
   time_train_list = []
   time_search_list = []

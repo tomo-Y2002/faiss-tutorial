@@ -3,7 +3,7 @@ import os
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 import faiss
-from data.data import xb, xq, d
+from data.data import make_data
 import time
 
 class IVF():
@@ -11,6 +11,7 @@ class IVF():
     self.k = k
     self.nlist = nlist
     self.nprobe = nprobe
+    self.name = "IVF"
 
   def train(self, xb, d):
     """
@@ -45,6 +46,7 @@ class IVF():
   
 if __name__=="__main__":
   obj = IVF(k = 4, nlist = 1000, nprobe = 10)
+  xb, xq, d = make_data()
   time_train = obj.train(xb, d)
   _, I, time_search = obj.search(xq)
   print(I[-5:])
