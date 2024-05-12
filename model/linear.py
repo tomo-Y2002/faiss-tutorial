@@ -3,12 +3,13 @@ import os
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 import faiss
-from data.data import xb, xq, d
+from data.data import make_data
 import time
 
 class FlatL2():
   def __init__(self, k):
     self.k = k
+    self.name = "FlatL2"
 
   def train(self, xb, d):
     """
@@ -34,6 +35,7 @@ class FlatL2():
 
 if __name__=="__main__":
   obj = FlatL2(k = 4)
+  xb, xq, d = make_data()
   time_train = obj.train(xb, d)
   D, I, _ = obj.search(xb[:5])
   print(D)
