@@ -12,7 +12,7 @@ def main():
   ivf = IVF(k = k, nlist = 100, nprobe = 3)
   models = [flatL2, ivf]
   
-  nb_list = np.logspace(4, 6, 10).astype("int")
+  nb_list = np.logspace(4, 6, 20).astype("int")
   nq_list = [1000]
   d_list = [64]
   n_trial = 5
@@ -33,10 +33,11 @@ def main():
             time_search_list[n_try][idx].append(time_search)
   
   # 描画
+  time_train_list = np.mean(np.array(time_train_list), axis=(0))
+  time_search_list = np.mean(np.array(time_search_list), axis=(0))
   plt.figure()
   for idx, model in enumerate(models):
     plt.plot(nb_list, time_train_list[idx], label=model.name)
-    ## ここからスタート　挑戦回数の平均を取る
   plt.xlabel("nb")
   plt.ylabel("train time [s]")
   plt.title("nb - train_time")
