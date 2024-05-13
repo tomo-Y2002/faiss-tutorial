@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from data.data import make_data
 from model.flatl2 import FlatL2
 from model.flatip import FlatIP
+from model.flatl2_pca import FlatL2PCA
 from model.ivf import IVF
 from model.ivfpq import IVFPQ
 
@@ -12,9 +13,10 @@ def main():
   k = 4
   flatL2 = FlatL2(k = k)
   flatIP = FlatIP(k = k)
+  flatL2pca = FlatL2PCA(k = k, d_new = 8)
   ivf = IVF(k = k, nlist = 100, nprobe = 3)
   ivfpq = IVFPQ(k = k, nlist = 100, m = 8)
-  models = [flatL2, flatIP, ivf, ivfpq]
+  models = [flatL2, flatIP, flatL2pca, ivf, ivfpq]
   
   nb_list = np.logspace(4, 6, 20).astype("int")
   nq_list = [1000]
