@@ -4,13 +4,15 @@ import matplotlib.pyplot as plt
 from data.data import make_data
 from model.linear import FlatL2
 from model.ivf import IVF
+from model.ivfpq import IVFPQ
 
 def main():
   # モデル定義
   k = 4
   flatL2 = FlatL2(k = k)
   ivf = IVF(k = k, nlist = 100, nprobe = 3)
-  models = [flatL2, ivf]
+  ivfpq = IVFPQ(k = k, nlist = 100, m = 8)
+  models = [flatL2, ivf, ivfpq]
   
   nb_list = np.logspace(4, 6, 20).astype("int")
   nq_list = [1000]
