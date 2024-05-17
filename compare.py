@@ -2,15 +2,21 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from data.data import make_data
-from model.linear import FlatL2
+from model.flatl2 import FlatL2
+from model.flatip import FlatIP
+from model.flatl2_pca import FlatL2PCA
 from model.ivf import IVF
+from model.ivfpq import IVFPQ
 
 def main():
   # モデル定義
   k = 4
   flatL2 = FlatL2(k = k)
+  flatIP = FlatIP(k = k)
+  flatL2pca = FlatL2PCA(k = k, d_new = 8)
   ivf = IVF(k = k, nlist = 100, nprobe = 3)
-  models = [flatL2, ivf]
+  ivfpq = IVFPQ(k = k, nlist = 100, m = 8)
+  models = [flatL2, flatIP, flatL2pca, ivf, ivfpq]
   
   nb_list = np.logspace(4, 6, 20).astype("int")
   nq_list = [1000]
@@ -35,6 +41,7 @@ def main():
   # 描画
   time_train_list = np.mean(np.array(time_train_list), axis=(0))
   time_search_list = np.mean(np.array(time_search_list), axis=(0))
+  name_models = '_'.join(model.name for model in models)
   plt.figure()
   for idx, model in enumerate(models):
     plt.plot(nb_list, time_train_list[idx], label=model.name)
@@ -42,7 +49,7 @@ def main():
   plt.ylabel("train time [s]")
   plt.title("nb - train_time")
   plt.legend()
-  plt.savefig("data/fig/compare_nb_train_time.png")
+  plt.savefig(f"data/fig/compare_nb_train_time_{name_models}.png")
   plt.show()
 
   plt.figure()
@@ -52,7 +59,7 @@ def main():
   plt.ylabel("search time [s]")
   plt.title("nb - search_time")
   plt.legend()
-  plt.savefig("data/fig/compare_nb_search_time.png")
+  plt.savefig(f"data/fig/compare_nb_search_time_{name_models}.png")
   plt.show()
 
   
