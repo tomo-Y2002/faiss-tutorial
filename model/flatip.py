@@ -16,9 +16,11 @@ class FlatIP():
     returns time spend on training
     """
     self.index = faiss.IndexFlatIP(d)
-    self.index.add(xb)
     time_train = 0
-    return time_train
+    start = time.time()
+    self.index.add(xb)
+    time_add = time.time() - start
+    return time_train, time_add
   
   def search(self, xq):
     """
@@ -36,7 +38,7 @@ class FlatIP():
 if __name__=="__main__":
   obj = FlatIP(k = 4)
   xb, xq, d = make_data()
-  time_train = obj.train(xb, d)
+  time_train, _ = obj.train(xb, d)
   D, I, _ = obj.search(xb[:5])
   print(D)
   print(I)

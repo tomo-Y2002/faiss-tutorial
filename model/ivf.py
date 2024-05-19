@@ -26,9 +26,12 @@ class IVF():
     self.index.train(xb)
     time_train = time.time() - start
     assert self.index.is_trained
-    self.index.add(xb)
 
-    return time_train
+    start = time.time()
+    self.index.add(xb)
+    time_add = time.time() - start
+
+    return time_train, time_add
   
   def search(self, xq):
     """
@@ -47,7 +50,7 @@ class IVF():
 if __name__=="__main__":
   obj = IVF(k = 4, nlist = 1000, nprobe = 10)
   xb, xq, d = make_data()
-  time_train = obj.train(xb, d)
+  time_train, _ = obj.train(xb, d)
   _, I, time_search = obj.search(xq)
   print(I[-5:])
   print(f"time : {time_search}")

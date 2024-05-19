@@ -23,8 +23,10 @@ class FlatL2PCA():
     self.mat.train(xb)
     time_train = time.time() - start
 
+    start = time.time()
     self.index.add(self.mat.apply(xb))
-    return time_train
+    time_add = time.time() - start
+    return time_train, time_add
   
   def search(self, xq):
     """
@@ -42,7 +44,7 @@ class FlatL2PCA():
 if __name__=="__main__":
   obj = FlatL2PCA(k = 4, d_new = 8)
   xb, xq, d = make_data()
-  time_train = obj.train(xb, d)
+  time_train, _ = obj.train(xb, d)
   D, I, _ = obj.search(xb[:5])
   print(D)
   print(I)
