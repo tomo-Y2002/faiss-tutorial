@@ -58,7 +58,7 @@ def main():
   bi_hnsw = BinaryHNSW(k = k, m = 20)
   models = [flatL2, flatIP, flatL2pca, ivf, ivfpq, hnswFlat, bi_hnsw]
   
-  nb_list = np.logspace(4, 6, 20).astype("int")
+  nb_list = np.logspace(4, 6, 10).astype("int")
   # nb_list = np.linspace(10**4, 10**6, 20).astype("int")
   nq_list = [1000]
   d_list = [64]
