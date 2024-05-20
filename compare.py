@@ -8,6 +8,7 @@ from model.flatl2_pca import FlatL2PCA
 from model.ivf import IVF
 from model.ivfpq import IVFPQ
 from model.hnswflat import HNSWFlat
+from model.bi_hnswflat import BinaryHNSW
 
 def main():
   # モデル定義
@@ -18,12 +19,14 @@ def main():
   ivf = IVF(k = k, nlist = 100, nprobe = 3)
   ivfpq = IVFPQ(k = k, nlist = 100, m = 8)
   hnswFlat = HNSWFlat(k = k, m = 20)
-  models = [flatL2, flatIP, flatL2pca, ivf, ivfpq, hnswFlat]
+  bi_hnsw = BinaryHNSW(k = k, m = 20)
+  # models = [flatL2, flatIP, flatL2pca, ivf, ivfpq, hnswFlat, bi_hnsw]
+  models = [hnswFlat, bi_hnsw]
   
   nb_list = np.logspace(4, 6, 20).astype("int")
-  nq_list = [1000]
+  nq_list = [10000]
   d_list = [64]
-  n_trial = 5
+  n_trial = 1
   time_train_list = [[[] for i in range(len(models))] for i in range(n_trial)]
   time_add_list = [[[] for i in range(len(models))] for i in range(n_trial)]
   time_search_list = [[[] for i in range(len(models))] for i in range(n_trial)]
