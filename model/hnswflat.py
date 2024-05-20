@@ -6,26 +6,24 @@ import faiss
 from data.data import make_data
 import time
 
-class FlatL2PCA():
-  def __init__(self, k, d_new):
+class HNSWFlat():
+  def __init__(self, k, m):
     self.k = k
-    self.d_new = d_new
-    self.name = "FlatL2_PCA"
+    self.m = m
+    self.name = "HNSWFlat"
 
   def train(self, xb, d):
     """
-    returns time spend on training
+    returns 
+        time_train  : time elapsed during training
     """
-    self.index = faiss.IndexFlatL2(self.d_new)
+    self.index = faiss.IndexHNSWFlat(d, self.m)
 
-    self.mat = faiss.PCAMatrix(d, self.d_new)
+    time_train = 0
     start = time.time()
-    self.mat.train(xb)
-    time_train = time.time() - start
-
-    start = time.time()
-    self.index.add(self.mat.apply(xb))
+    self.index.add(xb)
     time_add = time.time() - start
+
     return time_train, time_add
   
   def search(self, xq):
@@ -35,23 +33,16 @@ class FlatL2PCA():
         I : Id nearest k neighbor (n, k)
         time_search : time spend at searchings
     """
-    start = time.time()
     assert self.index.is_trained
-    D, I = self.index.search(self.mat.apply(xq), self.k)
+    start = time.time()
+    D, I = self.index.search(xq, self.k)
     time_search = time.time() - start
     return D, I, time_search
-
+  
 if __name__=="__main__":
-  obj = FlatL2PCA(k = 4, d_new = 8)
+  obj = HNSWFlat(k = 4, m = 3)
   xb, xq, d = make_data()
   time_train, _ = obj.train(xb, d)
-  D, I, _ = obj.search(xb[:5])
-  print(D)
-  print(I)
   _, I, time_search = obj.search(xq)
-  print(I[:5])
   print(I[-5:])
-  print(f"time_train : {time_train}, time_search : {time_search}")
-
-
-    
+  print(f"time : {time_search}")
