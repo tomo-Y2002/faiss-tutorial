@@ -44,6 +44,62 @@ def get_recall(I, gt, n_recall):
   recall /= nq
   return recall
 
+def plot_qps_hnsw():
+  k = 4
+  
+  nb = 10**6
+  nq = 1000
+  d = 64
+  n_trial = 5
+  n_recall = 1
+  efs = [2**i for i in range(2, 11)]
+  qps_list = [[] for i in range(n_trial)]
+  recall_list = [[] for i in range(n_trial)]
+  
+
+  for n_try in range(n_trial):
+    print(f"----------iteration {n_try} / {n_trial} -----------")
+    xb, xq, d = make_data(nb, nq, d)
+    gt = get_gt(xb=xb, xq=xq, d=d, k=k)
+
+    for ef in efs:
+      print(f"ef = {ef}")
+
+      model = HNSWFlat(k = k, m = ef)
+      # train
+      _, _ = model.train(xb, d)
+      print("train done")
+
+      # search
+      _, I, time_search = model.search(xq)
+      print("search done")
+
+      # calculate QPS, Recall
+      qps_list[n_try].append(nq / time_search)
+      recall_list[n_try].append(get_recall(I=I, gt=gt, n_recall=n_recall))
+
+  recall_list = np.mean(np.array(recall_list), axis=(0))
+  qps_list = np.mean(np.array(qps_list), axis=(0))
+  print(f"recall_list \n {recall_list}")
+  print(f"qps_list \n {qps_list}")
+
+  #描画
+  name_models = "HNSW"
+
+  plt.figure()
+  
+  plt.plot(recall_list, qps_list, label=model.name)
+  plt.xlabel(f"Recall@{n_recall}")
+  plt.ylabel("Query Per Second [s]")
+  plt.yscale("log")
+  plt.title("recall - pqs")
+
+  for i, ef in enumerate(efs):
+        plt.annotate(f"ef = {ef}", (recall_list[i], qps_list[i]), textcoords="offset points", xytext=(5,10), ha='center')
+
+  plt.legend()
+  plt.savefig(f"data/fig/compare_recall_qps_{name_models}.png")
+  plt.show()
 
 
 def main():
@@ -54,10 +110,10 @@ def main():
   flatL2pca = FlatL2PCA(k = k, d_new = 8)
   ivf = IVF(k = k, nlist = 100, nprobe = 3)
   ivfpq = IVFPQ(k = k, nlist = 100, m = 8)
-  hnswFlat = HNSWFlat(k = k, m = 20)
-  bi_hnsw = BinaryHNSW(k = k, m = 20)
-  # models = [flatL2, flatIP, flatL2pca, ivf, ivfpq, hnswFlat, bi_hnsw]
-  models = [hnswFlat]
+  hnswFlat = HNSWFlat(k = k, m = 32)
+  bi_hnsw = BinaryHNSW(k = k, m = 32)
+  models = [flatL2, flatIP, flatL2pca, ivf, ivfpq, hnswFlat, bi_hnsw]
+  # models = [hnswFlat]
   
   # nb_list = np.logspace(4, 6, 10).astype("int")
   nb_list = np.linspace(10**4, 10**6, 20).astype("int")
@@ -68,8 +124,6 @@ def main():
   time_train_list = [[[] for i in range(len(models))] for i in range(n_trial)]
   time_add_list = [[[] for i in range(len(models))] for i in range(n_trial)]
   time_search_list = [[[] for i in range(len(models))] for i in range(n_trial)]
-  qps_list = [[[] for i in range(len(models))] for i in range(n_trial)]
-  recall_list = [[[] for i in range(len(models))] for i in range(n_trial)]
 
   for n_try in range(n_trial):
     print(f"----------iteration {n_try} / {n_trial} -----------")
@@ -78,18 +132,14 @@ def main():
         for d in d_list:
           print(f"process {idx_nb} / {len(nb_list)}")
           xb, xq, d = make_data(nb, nq, d)
-          gt = get_gt(xb=xb, xq=xq, d=d, k=k)
           for idx, model in enumerate(models):
             # train
             time_train, time_add = model.train(xb, d)
             time_train_list[n_try][idx].append(time_train)
             time_add_list[n_try][idx].append(time_add)
             # search
-            _, I, time_search = model.search(xq)
+            _, _, time_search = model.search(xq)
             time_search_list[n_try][idx].append(time_search)
-            # calculate QPS, Recall
-            qps_list[n_try][idx].append(nq / time_search)
-            recall_list[n_try][idx].append(get_recall(I=I, gt=gt, n_recall=n_recall))
 
 
             
@@ -98,8 +148,6 @@ def main():
   time_train_list = np.mean(np.array(time_train_list), axis=(0))
   time_add_list = np.mean(np.array(time_add_list), axis=(0))
   time_search_list = np.mean(np.array(time_search_list), axis=(0))
-  recall_list = np.mean(np.array(recall_list), axis=(0))
-  qps_list = np.mean(np.array(qps_list), axis=(0))
   name_models = '_'.join(model.name for model in models)
   plt.figure()
   for idx, model in enumerate(models):
@@ -131,19 +179,7 @@ def main():
   plt.savefig(f"data/fig/compare_nb_search_time_{name_models}.png")
   plt.show()
 
-  plt.figure()
-  for idx, model in enumerate(models):
-    plt.plot(recall_list[idx], qps_list[idx], label=model.name)
-  plt.xlabel(f"Recall@{n_recall}")
-  plt.ylabel("Query Per Second [s]")
-  plt.yscale("log")
-  plt.title("recall - pqs")
-  plt.legend()
-  plt.savefig(f"data/fig/compare_recall_qps_{name_models}.png")
-  plt.show()
-
-  
-
 
 if __name__=="__main__":
   main()
+  plot_qps_hnsw()
