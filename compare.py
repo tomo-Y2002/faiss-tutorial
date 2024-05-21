@@ -56,10 +56,11 @@ def main():
   ivfpq = IVFPQ(k = k, nlist = 100, m = 8)
   hnswFlat = HNSWFlat(k = k, m = 20)
   bi_hnsw = BinaryHNSW(k = k, m = 20)
-  models = [flatL2, flatIP, flatL2pca, ivf, ivfpq, hnswFlat, bi_hnsw]
+  # models = [flatL2, flatIP, flatL2pca, ivf, ivfpq, hnswFlat, bi_hnsw]
+  models = [hnswFlat]
   
-  nb_list = np.logspace(4, 6, 10).astype("int")
-  # nb_list = np.linspace(10**4, 10**6, 20).astype("int")
+  # nb_list = np.logspace(4, 6, 10).astype("int")
+  nb_list = np.linspace(10**4, 10**6, 20).astype("int")
   nq_list = [1000]
   d_list = [64]
   n_trial = 1
@@ -135,6 +136,7 @@ def main():
     plt.plot(recall_list[idx], qps_list[idx], label=model.name)
   plt.xlabel(f"Recall@{n_recall}")
   plt.ylabel("Query Per Second [s]")
+  plt.yscale("log")
   plt.title("recall - pqs")
   plt.legend()
   plt.savefig(f"data/fig/compare_recall_qps_{name_models}.png")
