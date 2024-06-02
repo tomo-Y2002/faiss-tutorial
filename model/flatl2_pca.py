@@ -11,6 +11,7 @@ class FlatL2PCA():
     self.k = k
     self.d_new = d_new
     self.name = "FlatL2_PCA"
+    self.order = 3
 
   def train(self, xb, d):
     """

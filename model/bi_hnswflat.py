@@ -10,7 +10,8 @@ class BinaryHNSW():
   def __init__(self, k, m):
     self.k = k
     self.m = m
-    self.name = "Binary HNSW"
+    self.name = "Binary-HNSW"
+    self.order = 7
 
   def train(self, xb, d):
     """

@@ -17,6 +17,7 @@ class IVFPQ():
     self.nlist = nlist
     self.m = m
     self.name = "IVF-PQ"
+    self.order = 5
 
   def train(self, xb, d):
     """

@@ -13,6 +13,7 @@ class GpuFlatL2():
     self.res = faiss.StandardGpuResources()
     self.config = faiss.GpuIndexFlatConfig()
     self.config.device = 0
+    self.order = 101
 
   def train(self, xb, d):
     """

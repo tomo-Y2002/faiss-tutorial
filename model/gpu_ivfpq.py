@@ -20,6 +20,7 @@ class GpuIVFPQ():
     self.res = faiss.StandardGpuResources()
     self.config = faiss.GpuIndexIVFPQConfig()
     self.config.device = 0
+    self.order = 103
 
   def train(self, xb, d):
     """

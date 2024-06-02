@@ -12,6 +12,7 @@ class IVF():
     self.nlist = nlist
     self.nprobe = nprobe
     self.name = "IVF"
+    self.order = 4
 
   def train(self, xb, d):
     """

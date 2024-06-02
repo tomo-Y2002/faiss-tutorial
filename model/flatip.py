@@ -10,6 +10,7 @@ class FlatIP():
   def __init__(self, k):
     self.k = k
     self.name = "FlatIP"
+    self.order = 2
 
   def train(self, xb, d):
     """

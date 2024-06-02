@@ -10,6 +10,7 @@ class FlatL2():
   def __init__(self, k):
     self.k = k
     self.name = "FlatL2"
+    self.order = 1
 
   def train(self, xb, d):
     """

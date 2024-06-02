@@ -11,6 +11,7 @@ class HNSWFlat():
     self.k = k
     self.m = m
     self.name = "HNSWFlat"
+    self.order = 6
 
   def train(self, xb, d):
     """

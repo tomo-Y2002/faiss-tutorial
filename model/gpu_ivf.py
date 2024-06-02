@@ -15,6 +15,7 @@ class GpuIVF():
     self.res = faiss.StandardGpuResources()
     self.config = faiss.GpuIndexIVFFlatConfig()
     self.config.device = 0
+    self.order = 102
 
   def train(self, xb, d):
     """
