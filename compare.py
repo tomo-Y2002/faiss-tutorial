@@ -1,5 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import pandas as pd
+import torch
 
 from data.data import make_data
 from model.flatl2 import FlatL2
@@ -98,7 +100,7 @@ def plot_qps_hnsw():
   plt.title("recall - pqs")
 
   for i, ef in enumerate(efs):
-        plt.annotate(f"ef = {ef}", (recall_list[i], qps_list[i]), textcoords="offset points", xytext=(5,10), ha='center')
+    plt.annotate(f"ef = {ef}", (recall_list[i], qps_list[i]), textcoords="offset points", xytext=(5,10), ha='center')
 
   plt.legend()
   plt.savefig(f"data/fig/compare_recall_qps_{name_models}.png")
@@ -115,17 +117,19 @@ def main():
   ivfpq = IVFPQ(k = k, nlist = 100, m = 8)
   hnswFlat = HNSWFlat(k = k, m = 32)
   bi_hnsw = BinaryHNSW(k = k, m = 32)
-  gpuflatL2 = GpuFlatL2(k = k)
-  gpuivf = GpuIVF(k = k, nlist = 100, nprobe = 3)
-  gpuivfpq = GpuIVFPQ(k = k, nlist = 100, m = 8)
+  if torch.cuda.is_available():
+    gpuflatL2 = GpuFlatL2(k = k)
+    gpuivf = GpuIVF(k = k, nlist = 100, nprobe = 3)
+    gpuivfpq = GpuIVFPQ(k = k, nlist = 100, m = 8)
   # models = [flatL2, flatIP, flatL2pca, ivf, ivfpq, hnswFlat, bi_hnsw, gpuflatL2, gpuivf, gpuivfpq]
   models = [flatL2, flatIP]
+  name_models = '_'.join(model.name for model in models)
   
   # nb_list = np.logspace(4, 6, 10).astype("int")
-  nb_list = np.linspace(10**4, 10**6, 10).astype("int")
+  nb_list = np.linspace(10**4, 10**6, 2).astype("int")
   nq_list = [1000]
   d_list = [64]
-  n_trial = 1
+  n_trial = 2
   time_train_list = np.zeros((n_trial, len(models), len(nb_list)))
   time_add_list = np.zeros((n_trial, len(models), len(nb_list)))
   time_search_list = np.zeros((n_trial, len(models), len(nb_list)))
@@ -146,17 +150,43 @@ def main():
             _, _, time_search = model.search(xq)
             time_search_list[n_try][idx][idx_nb] = time_search
 
+  # pandas
+  df_time_train = pd.DataFrame()
+  df_time_train_list = [pd.DataFrame(time_train_list[i], columns = nb_list) for i in range(n_trial)]
+  for i in range(n_trial):
+    df_time_train_list[i]["trial"] = i+1
+    df_time_train_list[i]["model"] = [model.name for model in models]
+    df_time_train = pd.concat([df_time_train, df_time_train_list[i]], axis=0)
+  df_time_train.to_csv(f"data/csv/time_train_{name_models}.csv", index = False)
 
+  df_time_add = pd.DataFrame()
+  df_time_add_list = [pd.DataFrame(time_add_list[i], columns = nb_list) for i in range(n_trial)]
+  for i in range(n_trial):
+    df_time_add_list[i]["trial"] = i+1
+    df_time_add_list[i]["model"] = [model.name for model in models]
+    df_time_add = pd.concat([df_time_add, df_time_add_list[i]], axis=0)
+  df_time_add.to_csv(f"data/csv/time_add_{name_models}.csv", index = False)
+
+  df_time_search = pd.DataFrame()
+  df_time_search_list = [pd.DataFrame(time_search_list[i], columns = nb_list) for i in range(n_trial)]
+  for i in range(n_trial):
+    df_time_search_list[i]["trial"] = i+1
+    df_time_search_list[i]["model"] = [model.name for model in models]
+    df_time_search = pd.concat([df_time_search, df_time_search_list[i]], axis=0)
+  df_time_search.to_csv(f"data/csv/time_search_{name_models}.csv", index = False)
             
-  
+  # 読み取り
+  df_time_train_read = pd.read_csv(f"data/csv/time_train_{name_models}.csv")
+  df_time_train_read = df_time_train_read.drop(columns = "trial").groupby("model").mean()
+  df_time_add_read = pd.read_csv(f"data/csv/time_add_{name_models}.csv")
+  df_time_add_read = df_time_add_read.drop(columns = "trial").groupby("model").mean()
+  df_time_search_read = pd.read_csv(f"data/csv/time_search_{name_models}.csv")
+  df_time_search_read = df_time_search_read.drop(columns = "trial").groupby("model").mean()
+
   # 描画
-  time_train_list = np.mean(np.array(time_train_list), axis=(0))
-  time_add_list = np.mean(np.array(time_add_list), axis=(0))
-  time_search_list = np.mean(np.array(time_search_list), axis=(0))
-  name_models = '_'.join(model.name for model in models)
   plt.figure()
-  for idx, model in enumerate(models):
-    plt.plot(nb_list, time_train_list[idx], label=model.name)
+  for model in models:
+    plt.plot(nb_list, df_time_train_read.loc[model.name], label=model.name)
   plt.xlabel("nb")
   plt.ylabel("train time [s]")
   plt.title("nb - train_time")
@@ -165,8 +195,8 @@ def main():
   plt.show()
 
   plt.figure()
-  for idx, model in enumerate(models):
-    plt.plot(nb_list, time_add_list[idx], label=model.name)
+  for model in models:
+    plt.plot(nb_list, df_time_add_read.loc[model.name], label=model.name)
   plt.xlabel("nb")
   plt.ylabel("add time [s]")
   plt.title("nb - add_time")
@@ -175,8 +205,8 @@ def main():
   plt.show()
 
   plt.figure()
-  for idx, model in enumerate(models):
-    plt.plot(nb_list, time_search_list[idx], label=model.name)
+  for model in models:
+    plt.plot(nb_list, df_time_search_read.loc[model.name], label=model.name)
   plt.xlabel("nb")
   plt.ylabel("search time [s]")
   plt.title("nb - search_time")
