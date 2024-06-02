@@ -119,16 +119,16 @@ def main():
   gpuivf = GpuIVF(k = k, nlist = 100, nprobe = 3)
   gpuivfpq = GpuIVFPQ(k = k, nlist = 100, m = 8)
   # models = [flatL2, flatIP, flatL2pca, ivf, ivfpq, hnswFlat, bi_hnsw, gpuflatL2, gpuivf, gpuivfpq]
-  models = [hnswFlat, bi_hnsw, gpuivfpq]
+  models = [flatL2, flatIP]
   
   # nb_list = np.logspace(4, 6, 10).astype("int")
   nb_list = np.linspace(10**4, 10**6, 10).astype("int")
   nq_list = [1000]
   d_list = [64]
   n_trial = 1
-  time_train_list = [[[] for i in range(len(models))] for i in range(n_trial)]
-  time_add_list = [[[] for i in range(len(models))] for i in range(n_trial)]
-  time_search_list = [[[] for i in range(len(models))] for i in range(n_trial)]
+  time_train_list = np.zeros((n_trial, len(models), len(nb_list)))
+  time_add_list = np.zeros((n_trial, len(models), len(nb_list)))
+  time_search_list = np.zeros((n_trial, len(models), len(nb_list)))
 
   for n_try in range(n_trial):
     print(f"----------iteration {n_try} / {n_trial} -----------")
@@ -140,11 +140,11 @@ def main():
           for idx, model in enumerate(models):
             # train
             time_train, time_add = model.train(xb, d)
-            time_train_list[n_try][idx].append(time_train)
-            time_add_list[n_try][idx].append(time_add)
+            time_train_list[n_try][idx][idx_nb] = time_train
+            time_add_list[n_try][idx][idx_nb] = time_add
             # search
             _, _, time_search = model.search(xq)
-            time_search_list[n_try][idx].append(time_search)
+            time_search_list[n_try][idx][idx_nb] = time_search
 
 
             
@@ -180,7 +180,6 @@ def main():
   plt.xlabel("nb")
   plt.ylabel("search time [s]")
   plt.title("nb - search_time")
-  plt.ylim(0, 0.005)
   plt.legend()
   plt.savefig(f"data/fig/compare_nb_search_time_{name_models}.png")
   plt.show()
