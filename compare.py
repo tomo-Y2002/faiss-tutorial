@@ -9,6 +9,9 @@ from model.ivf import IVF
 from model.ivfpq import IVFPQ
 from model.hnswflat import HNSWFlat
 from model.bi_hnswflat import BinaryHNSW
+from model.gpu_flatl2 import GpuFlatL2
+from model.gpu_ivf import GpuIVF
+from model.gpu_ivfpq import GpuIVFPQ
 
 def get_gt(xb, xq, d, k):
   """
@@ -112,15 +115,17 @@ def main():
   ivfpq = IVFPQ(k = k, nlist = 100, m = 8)
   hnswFlat = HNSWFlat(k = k, m = 32)
   bi_hnsw = BinaryHNSW(k = k, m = 32)
-  models = [flatL2, flatIP, flatL2pca, ivf, ivfpq, hnswFlat, bi_hnsw]
-  # models = [hnswFlat]
+  gpuflatL2 = GpuFlatL2(k = k)
+  gpuivf = GpuIVF(k = k, nlist = 100, nprobe = 3)
+  gpuivfpq = GpuIVFPQ(k = k, nlist = 100, m = 8)
+  # models = [flatL2, flatIP, flatL2pca, ivf, ivfpq, hnswFlat, bi_hnsw, gpuflatL2, gpuivf, gpuivfpq]
+  models = [hnswFlat, bi_hnsw, gpuivfpq]
   
   # nb_list = np.logspace(4, 6, 10).astype("int")
-  nb_list = np.linspace(10**4, 10**6, 20).astype("int")
+  nb_list = np.linspace(10**4, 10**6, 10).astype("int")
   nq_list = [1000]
   d_list = [64]
   n_trial = 1
-  n_recall = 1
   time_train_list = [[[] for i in range(len(models))] for i in range(n_trial)]
   time_add_list = [[[] for i in range(len(models))] for i in range(n_trial)]
   time_search_list = [[[] for i in range(len(models))] for i in range(n_trial)]
@@ -175,6 +180,7 @@ def main():
   plt.xlabel("nb")
   plt.ylabel("search time [s]")
   plt.title("nb - search_time")
+  plt.ylim(0, 0.005)
   plt.legend()
   plt.savefig(f"data/fig/compare_nb_search_time_{name_models}.png")
   plt.show()
@@ -182,4 +188,4 @@ def main():
 
 if __name__=="__main__":
   main()
-  plot_qps_hnsw()
+  # plot_qps_hnsw()
